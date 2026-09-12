@@ -22,10 +22,10 @@ async function connectDB() {
   await mongoose.connect(process.env.MONGODB_URI!);
 }
 
-async function sendPushNotification(title: string, body: string) {
+async function sendPushNotification(title: string, body: string, url: string = '/') {
   try {
     const subscriptions = await PushSubscription.find({});
-    const notificationPayload = JSON.stringify({ title, body });
+    const notificationPayload = JSON.stringify({ title, body, url });
 
     const promises = subscriptions.map((sub) =>
       webpush.sendNotification(sub, notificationPayload).catch(async (err: any) => {
@@ -60,7 +60,8 @@ export async function POST(req: Request) {
     const uploaderName = author || 'Seseorang';
     await sendPushNotification(
       'XII RPL ONE 📸',
-      `${uploaderName} baru saja mengunggah foto baru di Daily Random Feed!`
+      `${uploaderName} baru saja mengunggah foto baru di Daily Random Feed!`,
+      '/#galeri-daily'
     );
 
     return NextResponse.json({ success: true, data: newPhoto });
