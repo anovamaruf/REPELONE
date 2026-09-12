@@ -6,6 +6,7 @@ export default function InstallPWA() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showIosGuide, setShowIosGuide] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
+  const [isVisible, setIsVisible] = useState(true); // State untuk tombol close (✕)
 
   useEffect(() => {
     // Cek apakah sudah di-install sebagai PWA
@@ -44,12 +45,21 @@ export default function InstallPWA() {
     }
   };
 
-  if (isStandalone) return null;
+  if (isStandalone || !isVisible) return null;
 
   return (
     <>
       {/* Banner / Tombol Mengapung di bagian bawah */}
       <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 z-40 bg-slate-900/95 border border-sky-400/40 p-4 rounded-2xl shadow-2xl backdrop-blur-xl flex items-center justify-between gap-4 max-w-sm mx-auto">
+        {/* Tombol Close (✕) di pojok kanan atas banner */}
+        <button 
+          onClick={() => setIsVisible(false)}
+          className="absolute -top-2 -right-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white w-6 h-6 rounded-full text-xs flex items-center justify-center border border-sky-400/30 shadow-md"
+          title="Tutup sementara"
+        >
+          ✕
+        </button>
+
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl overflow-hidden bg-sky-950 border border-sky-400/40 flex-shrink-0">
             <img src="/ikon kelas.PNG" alt="Logo" className="w-full h-full object-cover" />
