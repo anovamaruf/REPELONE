@@ -9,7 +9,6 @@ export default function InstallPWA() {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
-    // Cek apakah sudah di-install sebagai PWA (berjalan dari layar utama)
     const standaloneCheck = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
     setIsStandalone(Boolean(standaloneCheck));
 
@@ -43,15 +42,15 @@ export default function InstallPWA() {
     }
   };
 
-  // JIKA SUDAH DI-INSTALL (Standalone Mode): Tampilkan tombol Refresh yang praktis
+  // JIKA SUDAH DI-INSTALL (Standalone Mode): Tampilkan tombol Refresh mungil di Header Atas
   if (isStandalone) {
     return (
       <button
         onClick={() => window.location.reload()}
-        className="fixed bottom-6 right-6 z-40 bg-slate-900/90 border border-sky-400/40 text-sky-300 hover:text-white text-xs font-mono px-3.5 py-2.5 rounded-2xl shadow-xl backdrop-blur-md flex items-center gap-2 transition-all hover:bg-slate-800 active:scale-95"
+        className="fixed top-3.5 right-20 sm:right-24 z-50 bg-sky-950/80 border border-sky-400/30 text-sky-300 hover:text-white text-xs font-mono px-3 py-1.5 rounded-lg shadow-md backdrop-blur-md flex items-center gap-1.5 transition-all hover:border-sky-400"
         title="Muat Ulang Aplikasi"
       >
-        <span>🔄</span> Refresh App
+        <span>🔄</span> Refresh
       </button>
     );
   }
@@ -60,7 +59,7 @@ export default function InstallPWA() {
 
   return (
     <>
-      {/* Banner / Tombol Install untuk browser biasa */}
+      {/* Banner / Tombol Install untuk browser biasa (bisa ditutup dengan X) */}
       <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 z-40 bg-slate-900/95 border border-sky-400/40 p-4 rounded-2xl shadow-2xl backdrop-blur-xl flex items-center justify-between gap-4 max-w-sm mx-auto">
         <button 
           onClick={() => setIsVisible(false)}
