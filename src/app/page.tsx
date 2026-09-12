@@ -118,7 +118,7 @@ export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const backsoundAudioUrl = "ssstik.io_1789250664138.mp3";
+  const backsoundAudioUrl = "/outro.mp3";
 
   const fetchPhotos = async () => {
     try {
