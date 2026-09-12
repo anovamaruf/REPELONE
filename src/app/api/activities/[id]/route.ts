@@ -15,18 +15,21 @@ async function connectToDatabase() {
   await mongoose.connect(process.env.MONGODB_URI!);
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     await connectToDatabase();
-    const { id } = params;
+    const { id } = await params;
     const { adminKey } = await req.json();
 
     if (adminKey !== 'admin123') {
       return NextResponse.json({ success: false, error: 'Sandi Admin salah!' }, { status: 401 });
     }
 
-    const deleted = await Activity.findByIdAndDelete(id);
-    if (!deleted) {
+    const deletedActivity = await Activity.findByIdAndDelete(id);
+    if (!deletedActivity) {
       return NextResponse.json({ success: false, error: 'Kegiatan tidak ditemukan' }, { status: 404 });
     }
 
