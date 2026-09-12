@@ -4,83 +4,111 @@ import mongoose from 'mongoose';
 const MemberBioSchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true },
   quote: { type: String, required: true },
-  passcode: { type: String, required: true },
-  canEdit: { type: Boolean, default: true }, // Kontrol 1x edit (bisa dibuka lagi oleh Admin)
+  canEdit: { type: Boolean, default: false },
   updatedAt: { type: Date, default: Date.now },
 });
 
 const MemberBio = mongoose.models.MemberBio || mongoose.model('MemberBio', MemberBioSchema);
 
-async function connectToDatabase() {
+async function connectDB() {
   if (mongoose.connection.readyState >= 1) return;
-  const mongoUri = process.env.MONGODB_URI;
-  if (!mongoUri) throw new Error('MONGODB_URI belum terpasang!');
-  await mongoose.connect(mongoUri);
+  await mongoose.connect(process.env.MONGODB_URI!);
 }
 
-// GET: Ambil daftar bio tersimpan dari MongoDB
+// Daftar NIS resmi sesuai data kelas
+const studentNisMap: Record<string, string> = {
+  "AHMAD RIZKI FEBRIAN": "24119830",
+  "ASMIRA SALVIA": "24119831",
+  "BAIQ IZA NURUL AZKIYA": "24119832",
+  "BINTANG ARASTI": "24119833",
+  "DIANA SUSIANTO": "24119834",
+  "DYMAS ALIP PROJO": "24119835",
+  "GHITSA RIZKIKA": "24119836",
+  "GUFRAN NAPISS": "24119837",
+  "I GUSTI BAGUS AGUNG ALIT MAHENDRA": "24119838",
+  "I KOMANG ANGGA ADI ARTA": "24119839",
+  "I NYOMAN SATIA MAHESA LINGGIH": "24119840",
+  "I PUTU ANDRAYUGA PUTRA SUDHANA": "24119841",
+  "I WAYAN EKALAYA": "24119842",
+  "IDA AYU NYOMAN DWIPA YANTI": "24119843",
+  "LALU FAHRIZA ALFARIZKY": "24119845",
+  "MADU CITRA LESTARI": "24119846",
+  "MAULANA WAIS AL KHARONI": "24119847",
+  "MUHAMMAD ANOVA MA'RUF": "24119848",
+  "MUHAMMAD AQSHO KHATAMI": "24119849",
+  "MUHAMMAD RADJADIN": "24119850",
+  "MUHAMMAD WAZIR ISLAMI": "24119851",
+  "NADIA": "24119852",
+  "NAMIRA HARDI": "24119853",
+  "NIKITA MULIANI CANDRA": "24119854",
+  "NURHAYANI": "24119855",
+  "NURISYA PUTRI": "24119856",
+  "PANJIE PRATAMA PUTRA RAHMAN": "24119857",
+  "PUTRI AYUDIA CHAIRUNNISA": "24119858",
+  "RIZKY ISLAMI PASHYA": "24119859",
+  "SELVAN JULIAN PRATAMA": "24119860",
+  "SOVIYA KUDUSIYAH": "24119861",
+  "SYAMSON TEGUH MULEJATI": "24119862",
+  "TIARA": "24119863",
+  "ZAHRA TUSSITA": "24119864",
+  "ZAINAB MANSHUR": "24119865"
+};
+
+// GET: Mengambil semua data bio siswa
 export async function GET() {
   try {
-    await connectToDatabase();
-    const bios = await MemberBio.find();
-    return NextResponse.json({ success: true, data: bios });
+    await connectDB();
+    const members = await MemberBio.find({});
+    return NextResponse.json({ success: true, data: members });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 
-// POST: Update bio siswa berdasarkan verifikasi kata sandi
+// POST: Menyimpan/Memperbarui Bio dengan verifikasi NIS & Admin Key ("081114")
 export async function POST(req: Request) {
   try {
-    await connectToDatabase();
+    await connectDB();
     const { name, quote, passcode, adminKey } = await req.json();
 
-    if (!name || !quote || !passcode) {
-      return NextResponse.json({ success: false, error: 'Data tidak lengkap' }, { status: 400 });
+    if (!name || !quote) {
+      return NextResponse.json({ success: false, error: 'Nama dan quote wajib diisi' }, { status: 400 });
     }
 
-    let member = await MemberBio.findOne({ name });
+    const correctNis = studentNisMap[name];
+    const MASTER_ADMIN_KEY = "081114"; // Sandi admin baru
 
-    // Cek Akses Admin untuk membukan kembali izin edit (Reset edit status)
-    if (adminKey && adminKey === 'admin123') {
-      if (!member) {
-        member = await MemberBio.create({ name, quote, passcode, canEdit: true });
-      } else {
-        member.canEdit = true;
-        await member.save();
-      }
-      return NextResponse.json({ success: true, message: 'Izin edit diberikan oleh Admin', data: member });
+    let isAuthorized = false;
+
+    // Cek apakah yang memasukkan sandi adalah admin utama ("081114")
+    if (adminKey && adminKey === MASTER_ADMIN_KEY) {
+      isAuthorized = true;
+    } 
+    // Atau cek apakah passcode yang dimasukkan sesuai dengan NIS siswa bersangkutan
+    else if (passcode && passcode === correctNis) {
+      isAuthorized = true;
     }
 
-    // Jika member belum ada di database, buat baru
-    if (!member) {
-      if (passcode !== '12345') {
-        return NextResponse.json({ success: false, error: 'Sandi salah!' }, { status: 401 });
-      }
-      const newMember = await MemberBio.create({ name, quote, passcode, canEdit: false });
-      return NextResponse.json({ success: true, data: newMember });
-    }
-
-    // Jika member sudah pernah mengedit bio dan belum diizinkan admin
-    if (!member.canEdit) {
+    if (!isAuthorized) {
       return NextResponse.json({ 
         success: false, 
-        error: 'Kamu sudah pernah mengedit bio 1 kali. Hubungi Admin (Anova) untuk membuka akses edit!' 
+        error: 'Kata sandi salah! Masukkan NIS kamu dengan benar atau gunakan Kunci Admin (081114).' 
       }, { status: 403 });
     }
 
-    // Verifikasi kata sandi
-    if (member.passcode !== passcode && passcode !== '12345') {
-      return NextResponse.json({ success: false, error: 'Sandi salah!' }, { status: 401 });
-    }
+    // Jika lolos verifikasi, simpan atau update bio ke database
+    // canEdit diset false setelah 1x edit (kecuali direset oleh admin)
+    const updatedBio = await MemberBio.findOneAndUpdate(
+      { name },
+      { 
+        quote, 
+        canEdit: adminKey === MASTER_ADMIN_KEY ? true : false, // Jika admin yang edit, izin bisa direset
+        updatedAt: Date.now() 
+      },
+      { upsert: true, new: true }
+    );
 
-    // Update bio dan kunci akses edit (canEdit = false)
-    member.quote = quote;
-    member.canEdit = false;
-    member.updatedAt = new Date();
-    await member.save();
-
-    return NextResponse.json({ success: true, data: member });
+    return NextResponse.json({ success: true, data: updatedBio });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
