@@ -100,6 +100,9 @@ export default function Home() {
   const [actFile, setActFile] = useState<string | null>(null);
   const [isUploadingAct, setIsUploadingAct] = useState(false);
   
+  // State untuk Preview / Zoom Foto Pop-up (Lightbox)
+  const [activePhotoModal, setActivePhotoModal] = useState<{ imageUrl: string; title?: string; description?: string; caption?: string; author?: string } | null>(null);
+
   const [selectedMember, setSelectedMember] = useState<{ name: string; currentQuote: string } | null>(null);
   const [inputQuote, setInputQuote] = useState('');
   const [inputPasscode, setInputPasscode] = useState('');
@@ -212,7 +215,8 @@ export default function Home() {
     }
   };
 
-  const handleDeletePhoto = async (id: string) => {
+  const handleDeletePhoto = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Mencegah modal pop-up ikut terbuka saat tombol hapus diklik
     const password = prompt('Masukkan Sandi Admin untuk menghapus foto ini:');
     if (!password) return;
 
@@ -235,7 +239,8 @@ export default function Home() {
     }
   };
 
-  const handleDeleteActivity = async (id: string) => {
+  const handleDeleteActivity = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Mencegah modal pop-up ikut terbuka saat tombol hapus diklik
     const password = prompt('Masukkan Sandi Admin untuk menghapus kegiatan ini:');
     if (!password) return;
 
@@ -641,24 +646,24 @@ export default function Home() {
               </div>
 
               <div>
-                <label className="text-[11px] font-mono text-sky-300 block mb-1">Kata Sandi (Kode Pin):</label>
+                <label className="text-[11px] font-mono text-sky-300 block mb-1">Kata Sandi (NIS Kamu):</label>
                 <input
                   type="password"
                   value={inputPasscode}
                   onChange={(e) => setInputPasscode(e.target.value)}
                   required
-                  placeholder="Masukkan sandi (default: 12345)..."
+                  placeholder="Masukkan NIS kamu..."
                   className="w-full bg-slate-950 border border-sky-500/30 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-sky-400 text-white"
                 />
               </div>
 
               <div>
-                <label className="text-[10px] font-mono text-slate-400 block mb-1">Kunci Akses Admin (Opsional - Jika mau reset izin edit):</label>
+                <label className="text-[10px] font-mono text-slate-400 block mb-1">Kunci Akses Admin (081114 - Opsional):</label>
                 <input
                   type="password"
                   value={adminKey}
                   onChange={(e) => setAdminKey(e.target.value)}
-                  placeholder="Hanya diisi oleh Admin (Anova)..."
+                  placeholder="Hanya diisi oleh Admin..."
                   className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-400 focus:outline-none focus:border-sky-400"
                 />
               </div>
@@ -708,13 +713,17 @@ export default function Home() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {activities.map((act) => (
-              <div key={act._id} className="group bg-slate-900 border border-sky-500/20 rounded-2xl overflow-hidden shadow-lg hover:border-sky-400 transition-all flex flex-col justify-between">
+              <div 
+                key={act._id} 
+                onClick={() => setActivePhotoModal({ imageUrl: act.imageUrl, title: act.title, description: act.description })}
+                className="group bg-slate-900 border border-sky-500/20 rounded-2xl overflow-hidden shadow-lg hover:border-sky-400 transition-all flex flex-col justify-between cursor-pointer"
+              >
                 <div>
                   <div className="relative aspect-video overflow-hidden bg-slate-950">
                     <img src={act.imageUrl} alt={act.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     <div className="absolute top-2 right-2">
                       <button
-                        onClick={() => handleDeleteActivity(act._id)}
+                        onClick={(e) => handleDeleteActivity(act._id, e)}
                         className="bg-red-500/80 hover:bg-red-600 text-white text-[10px] font-mono px-2.5 py-1 rounded-lg backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                       >
                         🗑 Hapus (Admin)
@@ -841,12 +850,16 @@ export default function Home() {
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {photos.map((photo) => (
-              <div key={photo._id} className="group relative rounded-2xl overflow-hidden bg-slate-900 border border-sky-500/20 shadow-md hover:border-sky-400 transition-all">
+              <div 
+                key={photo._id} 
+                onClick={() => setActivePhotoModal({ imageUrl: photo.imageUrl, caption: photo.caption, author: photo.author })}
+                className="group relative rounded-2xl overflow-hidden bg-slate-900 border border-sky-500/20 shadow-md hover:border-sky-400 transition-all cursor-pointer"
+              >
                 <img src={photo.imageUrl} alt={photo.caption || 'Daily Photo'} className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent p-3 flex flex-col justify-between">
                   <div className="flex justify-end">
                     <button
-                      onClick={() => handleDeletePhoto(photo._id)}
+                      onClick={(e) => handleDeletePhoto(photo._id, e)}
                       className="bg-red-500/80 hover:bg-red-600 text-white text-[10px] font-mono px-2 py-1 rounded-lg backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                     >
                       🗑 Hapus (Admin)
@@ -862,6 +875,37 @@ export default function Home() {
           </div>
         )}
       </section>
+
+      {/* Modal Zoom Foto / Lightbox Popup */}
+      {activePhotoModal && (
+        <div 
+          className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer"
+          onClick={() => setActivePhotoModal(null)}
+        >
+          <div className="relative max-w-2xl w-full bg-slate-900 border border-sky-500/30 rounded-3xl overflow-hidden shadow-2xl p-4 space-y-3 cursor-default" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+              <span className="text-xs font-mono text-sky-400">Pratinjau Foto</span>
+              <button 
+                onClick={() => setActivePhotoModal(null)}
+                className="text-slate-400 hover:text-white text-xs font-mono px-3 py-1.5 bg-slate-800 rounded-xl"
+              >
+                ✕ Tutup
+              </button>
+            </div>
+            <div className="relative rounded-2xl overflow-hidden bg-black max-h-[65vh] flex items-center justify-center">
+              <img src={activePhotoModal.imageUrl} alt="Zoomed" className="max-h-[60vh] w-auto object-contain rounded-xl" />
+            </div>
+            {(activePhotoModal.title || activePhotoModal.description || activePhotoModal.caption || activePhotoModal.author) && (
+              <div className="text-left space-y-1 pt-1">
+                {activePhotoModal.title && <h4 className="text-sm font-bold text-white">{activePhotoModal.title}</h4>}
+                {activePhotoModal.description && <p className="text-xs text-slate-300 font-light">{activePhotoModal.description}</p>}
+                {activePhotoModal.caption && <p className="text-sm font-medium text-white">{activePhotoModal.caption}</p>}
+                {activePhotoModal.author && <p className="text-xs font-mono text-sky-300">Oleh: {activePhotoModal.author}</p>}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Section 6: BOARD PESAN & KESAN */}
       <section id="pesan-kelas" className="reveal-item max-w-4xl mx-auto px-6 py-10 border-t border-sky-500/20">
