@@ -659,7 +659,7 @@ export default function Home() {
               </div>
 
               <div>
-                <label className="text-[10px] font-mono text-slate-400 block mb-1">Kunci Akses Admin (081114 - Opsional):</label>
+                <label className="text-[10px] font-mono text-slate-400 block mb-1">Kunci Akses Admin (Opsional):</label>
                 <input
                   type="password"
                   value={adminKey}
