@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import gsap from 'gsap';
 import AboutSection from '@/components/AboutSection';
 import UploadModal from '@/components/UploadModal';
+import InstallPWA from '@/components/InstallPWA';
 
 interface Photo {
   _id: string;
@@ -210,7 +211,6 @@ export default function Home() {
     }
   };
 
-  // Fungsi Hapus Foto Daily Random (Admin)
   const handleDeletePhoto = async (id: string) => {
     const password = prompt('Masukkan Sandi Admin untuk menghapus foto ini:');
     if (!password) return;
@@ -234,7 +234,6 @@ export default function Home() {
     }
   };
 
-  // Fungsi Hapus Kegiatan Kelas (Admin)
   const handleDeleteActivity = async (id: string) => {
     const password = prompt('Masukkan Sandi Admin untuk menghapus kegiatan ini:');
     if (!password) return;
@@ -258,7 +257,6 @@ export default function Home() {
     }
   };
 
-  // Upload Kegiatan Baru
   const handleUploadActivitySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!actFile || !actTitle.trim()) return;
@@ -690,7 +688,7 @@ export default function Home() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
           <div>
             <h2 className="text-xs font-mono text-sky-400 uppercase tracking-widest">Arsip Resmi Kelas</h2>
-            <h3 className="text-2xl font-bold text-white tracking-tight mt-1"> Galeri Kegiatan Kelas</h3>
+            <h3 className="text-2xl font-bold text-white tracking-tight mt-1">📁 Galeri Kegiatan Kelas</h3>
           </div>
 
           <button
@@ -831,7 +829,7 @@ export default function Home() {
       <section id="galeri-daily" className="reveal-item max-w-4xl mx-auto px-6 py-10 border-t border-sky-500/20">
         <div className="mb-6">
           <h2 className="text-xs font-mono text-sky-400 uppercase tracking-widest">Dokumentasi Harian</h2>
-          <h3 className="text-2xl font-bold text-white tracking-tight mt-1">Daily Random Feed </h3>
+          <h3 className="text-2xl font-bold text-white tracking-tight mt-1">Daily Random Feed 📸</h3>
         </div>
 
         {photos.length === 0 ? (
@@ -921,6 +919,7 @@ export default function Home() {
       </section>
 
       <UploadModal onSuccess={fetchPhotos} />
+      <InstallPWA />
     </div>
   );
 }
