@@ -5,6 +5,7 @@ import gsap from 'gsap';
 import AboutSection from '@/components/AboutSection';
 import UploadModal from '@/components/UploadModal';
 import InstallPWA from '@/components/InstallPWA';
+import PushNotificationManager from '@/components/PushNotificationManager';
 
 interface Photo {
   _id: string;
@@ -920,6 +921,7 @@ export default function Home() {
 
       <UploadModal onSuccess={fetchPhotos} />
       <InstallPWA />
+      <PushNotificationManager />
     </div>
   );
 }
