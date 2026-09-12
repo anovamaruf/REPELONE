@@ -10,6 +10,7 @@ export default function UploadModal({ onSuccess }: UploadModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [author, setAuthor] = useState('');
   const [caption, setCaption] = useState('');
+  const [eventDate, setEventDate] = useState(''); // State untuk tanggal kegiatan
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -28,6 +29,7 @@ export default function UploadModal({ onSuccess }: UploadModalProps) {
     setSelectedImage(null);
     setAuthor('');
     setCaption('');
+    setEventDate('');
     setIsOpen(false);
   };
 
@@ -47,7 +49,7 @@ export default function UploadModal({ onSuccess }: UploadModalProps) {
 
       if (!uploadData.success) throw new Error(uploadData.error || 'Gagal upload gambar ke Cloudinary');
 
-      // 2. Simpan URL Cloudinary yang didapat ke database Photos
+      // 2. Simpan URL Cloudinary & eventDate yang didapat ke database Photos
       const res = await fetch('/api/photos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -55,6 +57,7 @@ export default function UploadModal({ onSuccess }: UploadModalProps) {
           imageUrl: uploadData.url,
           author: author.trim() || 'Anonim',
           caption: caption.trim(),
+          eventDate: eventDate || undefined, // Kirim tanggal pilihan user
         }),
       });
 
@@ -125,6 +128,17 @@ export default function UploadModal({ onSuccess }: UploadModalProps) {
                     value={caption}
                     onChange={(e) => setCaption(e.target.value)}
                     className="w-full bg-slate-950 border border-sky-500/30 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-400"
+                  />
+                </div>
+
+                {/* Input Tanggal Kegiatan */}
+                <div>
+                  <label className="text-[10px] font-mono text-sky-300 block mb-1">Tanggal Kegiatan (Opsional):</label>
+                  <input
+                    type="date"
+                    value={eventDate}
+                    onChange={(e) => setEventDate(e.target.value)}
+                    className="w-full bg-slate-950 border border-sky-500/30 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-400 font-mono"
                   />
                 </div>
 

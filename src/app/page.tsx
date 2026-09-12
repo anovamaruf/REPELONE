@@ -12,6 +12,7 @@ interface Photo {
   imageUrl: string;
   caption?: string;
   author?: string;
+  eventDate?: string; // Ditambahkan
   createdAt: string;
 }
 
@@ -216,7 +217,7 @@ export default function Home() {
   };
 
   const handleDeletePhoto = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation(); // Mencegah modal pop-up ikut terbuka saat tombol hapus diklik
+    e.stopPropagation();
     const password = prompt('Masukkan Sandi Admin untuk menghapus foto ini:');
     if (!password) return;
 
@@ -240,7 +241,7 @@ export default function Home() {
   };
 
   const handleDeleteActivity = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation(); // Mencegah modal pop-up ikut terbuka saat tombol hapus diklik
+    e.stopPropagation();
     const password = prompt('Masukkan Sandi Admin untuk menghapus kegiatan ini:');
     if (!password) return;
 
@@ -853,11 +854,11 @@ export default function Home() {
               <div 
                 key={photo._id} 
                 onClick={() => setActivePhotoModal({ imageUrl: photo.imageUrl, caption: photo.caption, author: photo.author })}
-                className="group relative rounded-2xl overflow-hidden bg-slate-900 border border-sky-500/20 shadow-md hover:border-sky-400 transition-all cursor-pointer"
+                className="group relative rounded-2xl overflow-hidden bg-slate-900 border border-sky-500/20 shadow-md hover:border-sky-400 transition-all cursor-pointer flex flex-col justify-between"
               >
-                <img src={photo.imageUrl} alt={photo.caption || 'Daily Photo'} className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent p-3 flex flex-col justify-between">
-                  <div className="flex justify-end">
+                <div>
+                  <img src={photo.imageUrl} alt={photo.caption || 'Daily Photo'} className="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <div className="absolute top-2 right-2">
                     <button
                       onClick={(e) => handleDeletePhoto(photo._id, e)}
                       className="bg-red-500/80 hover:bg-red-600 text-white text-[10px] font-mono px-2 py-1 rounded-lg backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
@@ -865,9 +866,12 @@ export default function Home() {
                       🗑 Hapus (Admin)
                     </button>
                   </div>
-                  <div>
-                    <p className="text-xs font-normal text-slate-200 line-clamp-1">{photo.caption || 'Random Moment'}</p>
-                    <p className="text-[10px] font-mono text-sky-300">By: {photo.author || 'Member'}</p>
+                </div>
+                <div className="p-3 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent space-y-1">
+                  <p className="text-xs font-normal text-slate-200 line-clamp-1">{photo.caption || 'Random Moment'}</p>
+                  <div className="flex items-center justify-between text-[10px] font-mono">
+                    <span className="text-sky-300">By: {photo.author || 'Member'}</span>
+                    <span className="text-slate-400">📅 {new Date(photo.eventDate || photo.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                   </div>
                 </div>
               </div>

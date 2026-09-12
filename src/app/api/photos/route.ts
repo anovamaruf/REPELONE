@@ -13,6 +13,7 @@ const PhotoSchema = new mongoose.Schema({
   imageUrl: { type: String, required: true },
   caption: { type: String },
   author: { type: String },
+  eventDate: { type: Date }, // Ditambahkan untuk menyimpan tanggal kegiatan pilihan user
   createdAt: { type: Date, default: Date.now },
 });
 const Photo = mongoose.models.Photo || mongoose.model('Photo', PhotoSchema);
@@ -45,7 +46,7 @@ export async function POST(req: Request) {
   try {
     await connectDB();
     const body = await req.json();
-    const { imageUrl, caption, author } = body;
+    const { imageUrl, caption, author, eventDate } = body;
 
     if (!imageUrl) {
       return NextResponse.json({ success: false, error: 'Image URL is required' }, { status: 400 });
@@ -55,6 +56,7 @@ export async function POST(req: Request) {
       imageUrl,
       caption,
       author: author || 'Member',
+      eventDate: eventDate ? new Date(eventDate) : new Date(), // Simpan tanggal pilihan atau default hari ini
     });
 
     const uploaderName = author || 'Seseorang';
